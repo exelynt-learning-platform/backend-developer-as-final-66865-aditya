@@ -1,9 +1,12 @@
 package com.multigenesys.booking.config;
 
+import com.multigenesys.booking.entity.Reservation;
+import com.multigenesys.booking.entity.ReservationStatus;
 import com.multigenesys.booking.entity.Resource;
 import com.multigenesys.booking.entity.ResourceType;
 import com.multigenesys.booking.entity.Role;
 import com.multigenesys.booking.entity.User;
+import com.multigenesys.booking.repository.ReservationRepository;
 import com.multigenesys.booking.repository.ResourceRepository;
 import com.multigenesys.booking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Component
@@ -21,12 +25,13 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final ResourceRepository resourceRepository;
+    private final ReservationRepository reservationRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
         seedUsers();
-        seedResources();
+        seedResourcesAndReservations();
     }
 
     private void seedUsers() {
@@ -67,7 +72,7 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void seedResources() {
+    private void seedResourcesAndReservations() {
         if (resourceRepository.count() == 0) {
             Resource conferenceRoom = Resource.builder()
                     .name("Grand Conference Room A")
@@ -106,6 +111,25 @@ public class DataInitializer implements CommandLineRunner {
             resourceRepository.save(studioCamera);
             resourceRepository.save(hotDesk);
             log.info("Sample bookable resources seeded successfully.");
+
+            // Seed initial sample reservation for user1
+            User user1 = userRepository.findByUsername("user1").orElse(null);
+            if (user1 != null) {
+                LocalDateTime start = LocalDateTime.now().plusDays(2).withHour(10).withMinute(0).withSecond(0).withNano(0);
+                LocalDateTime end = start.plusHours(3);
+                
+                Reservation sampleReservation = Reservation.builder()
+                        .user(user1)
+                        .resource(conferenceRoom)
+                        .startTime(start)
+                        .endTime(end)
+                        .totalPrice(new BigDecimal("450.00"))
+                        .status(ReservationStatus.CONFIRMED)
+                        .build();
+
+                reservationRepository.save(sampleReservation);
+                log.info("Sample reservation seeded for user1.");
+            }
         }
     }
 }
