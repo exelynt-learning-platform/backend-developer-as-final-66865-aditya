@@ -80,9 +80,12 @@ public class ReservationController {
             throw new BadRequestException("Invalid sortBy field: '" + sortBy + "'. Allowed fields are: " + ALLOWED_SORT_FIELDS);
         }
 
-        Sort sort = sortDirection.equalsIgnoreCase("ASC")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+        if (!sortDirection.equalsIgnoreCase("ASC") && !sortDirection.equalsIgnoreCase("DESC")) {
+            throw new BadRequestException("Invalid sortDirection: '" + sortDirection + "'. Allowed values are: 'ASC', 'DESC'");
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
+        Sort sort = Sort.by(direction, sortBy);
 
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<ReservationResponse> responses = reservationService.getReservations(

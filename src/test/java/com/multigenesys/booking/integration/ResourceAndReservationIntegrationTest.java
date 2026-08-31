@@ -225,4 +225,15 @@ class ResourceAndReservationIntegrationTest {
                 .andExpect(jsonPath("$.status", is(400)))
                 .andExpect(jsonPath("$.message", containsString("Invalid sortBy field")));
     }
+
+    @Test
+    @DisplayName("Edge Case: Invalid sortDirection in reservations endpoint should return 400 Bad Request")
+    void testInvalidSortDirectionReturnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/reservations")
+                        .header("Authorization", user1Token)
+                        .param("sortDirection", "INVALID_DIR"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.message", containsString("Invalid sortDirection")));
+    }
 }

@@ -92,9 +92,12 @@ public class ResourceController {
             throw new BadRequestException("Invalid sortBy field: '" + sortBy + "'. Allowed fields are: " + ALLOWED_SORT_FIELDS);
         }
 
-        Sort sort = sortDirection.equalsIgnoreCase("DESC") 
-                ? Sort.by(sortBy).descending() 
-                : Sort.by(sortBy).ascending();
+        if (!sortDirection.equalsIgnoreCase("ASC") && !sortDirection.equalsIgnoreCase("DESC")) {
+            throw new BadRequestException("Invalid sortDirection: '" + sortDirection + "'. Allowed values are: 'ASC', 'DESC'");
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
+        Sort sort = Sort.by(direction, sortBy);
         
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<ResourceResponse> responses = resourceService.getAllResources(type, availableOnly, pageable);
