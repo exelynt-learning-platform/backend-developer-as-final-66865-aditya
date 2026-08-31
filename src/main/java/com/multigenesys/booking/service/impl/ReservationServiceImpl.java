@@ -132,41 +132,45 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", "id", id));
 
-        // Ownership & Role-based status transition checks
         if (currentUser.getRole() == Role.ROLE_ADMIN) {
-            // Admin can transition to any status
-            if (newStatus != ReservationStatus.CANCELLED && reservation.getStatus() == ReservationStatus.CANCELLED) {
-                // If un-cancelling, verify no new overlap exists
-                boolean hasOverlap = reservationRepository.existsOverlappingReservationExcludingSelf(
-                        reservation.getResource().getId(),
-                        reservation.getId(),
-                        reservation.getStartTime(),
-                        reservation.getEndTime()
-                );
-                if (hasOverlap) {
-                    throw new ConflictException("Cannot reactivate reservation: time slot is now occupied by another booking");
-                }
-            }
-            reservation.setStatus(newStatus);
+            applyAdminStatusTransition(reservation, newStatus);
         } else {
-            // Standard USER rules
-            if (!reservation.getUser().getId().equals(currentUser.getId())) {
-                throw new AccessDeniedException("You are not authorized to modify this reservation");
-            }
-
-            if (newStatus != ReservationStatus.CANCELLED) {
-                throw new BadRequestException("Regular users can only cancel their own reservations");
-            }
-
-            if (reservation.getStatus() == ReservationStatus.CANCELLED) {
-                throw new BadRequestException("Reservation is already cancelled");
-            }
-
-            reservation.setStatus(ReservationStatus.CANCELLED);
+            applyUserStatusTransition(reservation, newStatus, currentUser);
         }
 
         Reservation updated = reservationRepository.save(reservation);
         return ReservationResponse.fromEntity(updated);
+    }
+
+    private void applyAdminStatusTransition(Reservation reservation, ReservationStatus newStatus) {
+        if (newStatus != ReservationStatus.CANCELLED && reservation.getStatus() == ReservationStatus.CANCELLED) {
+            boolean hasOverlap = reservationRepository.existsOverlappingReservationExcludingSelf(
+                    reservation.getResource().getId(),
+                    reservation.getId(),
+                    reservation.getStartTime(),
+                    reservation.getEndTime()
+            );
+            if (hasOverlap) {
+                throw new ConflictException("Cannot reactivate reservation: time slot is now occupied by another booking");
+            }
+        }
+        reservation.setStatus(newStatus);
+    }
+
+    private void applyUserStatusTransition(Reservation reservation, ReservationStatus newStatus, UserPrincipal currentUser) {
+        if (!reservation.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not authorized to modify this reservation");
+        }
+
+        if (newStatus != ReservationStatus.CANCELLED) {
+            throw new BadRequestException("Regular users can only cancel their own reservations");
+        }
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new BadRequestException("Reservation is already cancelled");
+        }
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
     }
 
     @Override
