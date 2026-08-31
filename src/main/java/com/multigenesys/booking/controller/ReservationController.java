@@ -110,20 +110,6 @@ public class ReservationController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(
-            summary = "Update reservation status (PUT)",
-            description = "Alias for status update. Users can cancel their own; Admins can update to any status."
-    )
-    public ResponseEntity<ReservationResponse> updateReservationStatusPut(
-            @PathVariable Long id,
-            @Valid @RequestBody ReservationStatusUpdateRequest request,
-            @AuthenticationPrincipal UserPrincipal currentUser) {
-        ReservationResponse response = reservationService.updateReservationStatus(id, request.getStatus(), currentUser);
-        return ResponseEntity.ok(response);
-    }
-
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(
