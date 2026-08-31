@@ -55,6 +55,11 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedResourcesAndReservations() {
+        seedResources();
+        seedReservations();
+    }
+
+    private void seedResources() {
         if (resourceRepository.count() == 0) {
             Resource conferenceRoom = Resource.builder()
                     .name("Grand Conference Room A")
@@ -93,13 +98,18 @@ public class DataInitializer implements CommandLineRunner {
             resourceRepository.save(studioCamera);
             resourceRepository.save(hotDesk);
             log.info("Sample bookable resources seeded successfully.");
+        }
+    }
 
-            // Seed initial sample reservation for user1
+    private void seedReservations() {
+        if (reservationRepository.count() == 0) {
             User user1 = userRepository.findByUsername("user1").orElse(null);
-            if (user1 != null) {
+            Resource conferenceRoom = resourceRepository.findAll().stream().findFirst().orElse(null);
+
+            if (user1 != null && conferenceRoom != null) {
                 LocalDateTime start = LocalDateTime.now().plusDays(2).withHour(10).withMinute(0).withSecond(0).withNano(0);
                 LocalDateTime end = start.plusHours(3);
-                
+
                 Reservation sampleReservation = Reservation.builder()
                         .user(user1)
                         .resource(conferenceRoom)

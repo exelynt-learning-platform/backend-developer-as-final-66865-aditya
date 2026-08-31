@@ -91,10 +91,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpServletRequest request) {
         log.warn("Malformed JSON request: {}", ex.getMessage());
+
+        String message = "Required request body is missing or contains invalid format/values";
+        Throwable rootCause = ex.getMostSpecificCause();
+        if (rootCause != null && rootCause.getMessage() != null) {
+            message = rootCause.getMessage();
+        } else if (ex.getMessage() != null) {
+            message = ex.getMessage();
+        }
+
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 "Malformed JSON Request",
-                "Required request body is missing or contains invalid format/values",
+                message,
                 request
         );
     }

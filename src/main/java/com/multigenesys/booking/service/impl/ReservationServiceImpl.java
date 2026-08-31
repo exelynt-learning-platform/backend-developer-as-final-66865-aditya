@@ -95,11 +95,10 @@ public class ReservationServiceImpl implements ReservationService {
             Pageable pageable,
             UserPrincipal currentUser) {
 
-        log.info("Fetching reservations: role={}, userId={}, status={}, minPrice={}, maxPrice={}",
-                currentUser.getRole(), currentUser.getId(), status, minPrice, maxPrice);
+        Long targetUserId = getUserIdToFilterBy(currentUser);
 
-        // Enforce RBAC ownership filter: Regular users only see their own reservations
-        Long targetUserId = (currentUser.getRole() == Role.ROLE_ADMIN) ? null : currentUser.getId();
+        log.info("Fetching reservations: role={}, targetUserId={}, status={}, minPrice={}, maxPrice={}",
+                currentUser.getRole(), targetUserId, status, minPrice, maxPrice);
 
         Page<Reservation> reservationPage = reservationRepository.findAll(
                 ReservationSpecification.withFilter(targetUserId, status, minPrice, maxPrice),
@@ -173,24 +172,28 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public void deleteReservation(Long id, UserPrincipal currentUser) {
-        log.info("Deleting / cancelling reservation id: {} by userId={}", id, currentUser.getId());
+        log.info("Cancelling reservation id: {} by userId={}, role={}", id, currentUser.getId(), currentUser.getRole());
 
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", "id", id));
 
-        if (currentUser.getRole() == Role.ROLE_ADMIN) {
-            reservationRepository.delete(reservation);
-        } else {
-            if (!reservation.getUser().getId().equals(currentUser.getId())) {
-                throw new AccessDeniedException("You are not authorized to delete this reservation");
-            }
-            if (reservation.getStatus() == ReservationStatus.CANCELLED) {
-                throw new BadRequestException("Reservation is already cancelled");
-            }
-            // Mark cancelled rather than hard deleting
-            reservation.setStatus(ReservationStatus.CANCELLED);
-            reservationRepository.save(reservation);
+        if (currentUser.getRole() != Role.ROLE_ADMIN && !reservation.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not authorized to cancel this reservation");
         }
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new BadRequestException("Reservation is already cancelled");
+        }
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
+    }
+
+    private Long getUserIdToFilterBy(UserPrincipal currentUser) {
+        if (currentUser.getRole() == Role.ROLE_ADMIN) {
+            return null; // Admin can view all reservations
+        }
+        return currentUser.getId(); // Regular user can only view their own
     }
 
     private void validateReservationTime(LocalDateTime startTime, LocalDateTime endTime) {

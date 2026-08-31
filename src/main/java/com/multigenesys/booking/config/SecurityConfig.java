@@ -106,15 +106,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        if ("*".equals(allowedOrigins.trim())) {
-            configuration.setAllowedOriginPatterns(List.of("*"));
-        } else {
-            List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                    .map(String::trim)
-                    .filter(origin -> !origin.isEmpty())
-                    .toList();
-            configuration.setAllowedOrigins(origins);
-        }
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList();
+        configuration.setAllowedOrigins(origins);
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
