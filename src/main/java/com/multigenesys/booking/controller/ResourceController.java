@@ -3,6 +3,7 @@ package com.multigenesys.booking.controller;
 import com.multigenesys.booking.dto.request.ResourceRequest;
 import com.multigenesys.booking.dto.response.ResourceResponse;
 import com.multigenesys.booking.entity.ResourceType;
+import com.multigenesys.booking.exception.BadRequestException;
 import com.multigenesys.booking.service.ResourceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,12 +28,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
 @Tag(name = "Resources", description = "Resource management endpoints (Admin full CRUD, User read-only)")
 @SecurityRequirement(name = "BearerAuth")
 public class ResourceController {
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "id", "name", "type", "pricePerHour", "isAvailable", "createdAt", "updatedAt"
+    );
 
     private final ResourceService resourceService;
 
@@ -81,6 +88,10 @@ public class ResourceController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new BadRequestException("Invalid sortBy field: '" + sortBy + "'. Allowed fields are: " + ALLOWED_SORT_FIELDS);
+        }
+
         Sort sort = sortDirection.equalsIgnoreCase("DESC") 
                 ? Sort.by(sortBy).descending() 
                 : Sort.by(sortBy).ascending();

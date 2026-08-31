@@ -203,4 +203,26 @@ class ResourceAndReservationIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("CANCELLED")));
     }
+
+    @Test
+    @DisplayName("Edge Case: Invalid sortBy field in resources endpoint should return 400 Bad Request")
+    void testInvalidSortByInResourcesReturnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/resources")
+                        .header("Authorization", user1Token)
+                        .param("sortBy", "nonExistentField"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.message", containsString("Invalid sortBy field")));
+    }
+
+    @Test
+    @DisplayName("Edge Case: Invalid sortBy field in reservations endpoint should return 400 Bad Request")
+    void testInvalidSortByInReservationsReturnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/reservations")
+                        .header("Authorization", user1Token)
+                        .param("sortBy", "invalidSortColumn"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.message", containsString("Invalid sortBy field")));
+    }
 }
