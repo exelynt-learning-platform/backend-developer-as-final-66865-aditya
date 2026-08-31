@@ -35,40 +35,22 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedUsers() {
-        if (!userRepository.existsByUsername("admin")) {
-            User admin = User.builder()
-                    .username("admin")
-                    .email("admin@example.com")
-                    .password(passwordEncoder.encode("Admin@123"))
-                    .fullName("System Administrator")
-                    .role(Role.ROLE_ADMIN)
-                    .build();
-            userRepository.save(admin);
-            log.info("Default ADMIN user seeded: admin / admin@example.com");
-        }
+        createAndSaveUser("admin", "admin@example.com", "Admin@123", "System Administrator", Role.ROLE_ADMIN);
+        createAndSaveUser("user1", "user1@example.com", "User@123", "John Doe", Role.ROLE_USER);
+        createAndSaveUser("user2", "user2@example.com", "User@123", "Jane Smith", Role.ROLE_USER);
+    }
 
-        if (!userRepository.existsByUsername("user1")) {
-            User user1 = User.builder()
-                    .username("user1")
-                    .email("user1@example.com")
-                    .password(passwordEncoder.encode("User@123"))
-                    .fullName("John Doe")
-                    .role(Role.ROLE_USER)
+    private void createAndSaveUser(String username, String email, String password, String fullName, Role role) {
+        if (!userRepository.existsByUsername(username)) {
+            User user = User.builder()
+                    .username(username)
+                    .email(email)
+                    .password(passwordEncoder.encode(password))
+                    .fullName(fullName)
+                    .role(role)
                     .build();
-            userRepository.save(user1);
-            log.info("Default regular user seeded: user1 / user1@example.com");
-        }
-
-        if (!userRepository.existsByUsername("user2")) {
-            User user2 = User.builder()
-                    .username("user2")
-                    .email("user2@example.com")
-                    .password(passwordEncoder.encode("User@123"))
-                    .fullName("Jane Smith")
-                    .role(Role.ROLE_USER)
-                    .build();
-            userRepository.save(user2);
-            log.info("Default secondary user seeded: user2 / user2@example.com");
+            userRepository.save(user);
+            log.info("Default {} user seeded: {} / {}", role.name(), username, email);
         }
     }
 

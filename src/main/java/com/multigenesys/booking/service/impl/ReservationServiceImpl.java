@@ -184,6 +184,9 @@ public class ReservationServiceImpl implements ReservationService {
             if (!reservation.getUser().getId().equals(currentUser.getId())) {
                 throw new AccessDeniedException("You are not authorized to delete this reservation");
             }
+            if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+                throw new BadRequestException("Reservation is already cancelled");
+            }
             // Mark cancelled rather than hard deleting
             reservation.setStatus(ReservationStatus.CANCELLED);
             reservationRepository.save(reservation);

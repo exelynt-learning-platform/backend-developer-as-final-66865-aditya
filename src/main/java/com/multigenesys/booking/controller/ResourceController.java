@@ -5,6 +5,7 @@ import com.multigenesys.booking.dto.response.ResourceResponse;
 import com.multigenesys.booking.entity.ResourceType;
 import com.multigenesys.booking.exception.BadRequestException;
 import com.multigenesys.booking.service.ResourceService;
+import com.multigenesys.booking.util.PaginationUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -12,9 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -88,18 +87,7 @@ public class ResourceController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         
-        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
-            throw new BadRequestException("Invalid sortBy field: '" + sortBy + "'. Allowed fields are: " + ALLOWED_SORT_FIELDS);
-        }
-
-        if (!sortDirection.equalsIgnoreCase("ASC") && !sortDirection.equalsIgnoreCase("DESC")) {
-            throw new BadRequestException("Invalid sortDirection: '" + sortDirection + "'. Allowed values are: 'ASC', 'DESC'");
-        }
-
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
-        Sort sort = Sort.by(direction, sortBy);
-        
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = PaginationUtils.createPageable(page, size, sortBy, sortDirection, ALLOWED_SORT_FIELDS);
         Page<ResourceResponse> responses = resourceService.getAllResources(type, availableOnly, pageable);
         return ResponseEntity.ok(responses);
     }
