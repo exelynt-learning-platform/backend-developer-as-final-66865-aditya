@@ -4,12 +4,10 @@ import com.multigenesys.booking.dto.request.ReservationRequest;
 import com.multigenesys.booking.dto.request.ReservationStatusUpdateRequest;
 import com.multigenesys.booking.dto.response.ReservationResponse;
 import com.multigenesys.booking.entity.ReservationStatus;
-import com.multigenesys.booking.exception.BadRequestException;
 import com.multigenesys.booking.security.UserPrincipal;
 import com.multigenesys.booking.service.ReservationService;
 import com.multigenesys.booking.util.PaginationUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -39,10 +36,6 @@ import java.util.Set;
 @Tag(name = "Reservations", description = "Reservation booking, filtering, pagination, and status management endpoints")
 @SecurityRequirement(name = "BearerAuth")
 public class ReservationController {
-
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "id", "startTime", "endTime", "totalPrice", "status", "createdAt", "updatedAt"
-    );
 
     private final ReservationService reservationService;
 
@@ -75,7 +68,7 @@ public class ReservationController {
             @RequestParam(defaultValue = "DESC") String sortDirection,
             @AuthenticationPrincipal UserPrincipal currentUser) {
 
-        Pageable pageable = PaginationUtils.createPageable(page, size, sortBy, sortDirection, ALLOWED_SORT_FIELDS);
+        Pageable pageable = PaginationUtils.createReservationPageable(page, size, sortBy, sortDirection);
         Page<ReservationResponse> responses = reservationService.getReservations(
                 status, minPrice, maxPrice, pageable, currentUser
         );

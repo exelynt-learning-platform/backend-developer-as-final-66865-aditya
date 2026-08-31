@@ -31,6 +31,9 @@ application:
     expiration-ms: 86400000 # 24 hours
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080,http://localhost:5173,http://localhost:4200}
+  seed:
+    admin-password: ${SEED_ADMIN_PASSWORD:Admin@123}
+    user-password: ${SEED_USER_PASSWORD:User@123}
 
 # Swagger / OpenAPI documentation
 springdoc:

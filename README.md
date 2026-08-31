@@ -42,6 +42,8 @@ The application uses standard Spring configuration properties with sensible defa
 | `DB_USERNAME` | `root` | MySQL username |
 | `DB_PASSWORD` | `root` | MySQL password |
 | `SERVER_PORT` | `8080` | Application HTTP server port |
+| `SEED_ADMIN_PASSWORD` | `Admin@123` | Default password for seeded `admin` account |
+| `SEED_USER_PASSWORD` | `User@123` | Default password for seeded `user1`/`user2` accounts |
 
 ---
 

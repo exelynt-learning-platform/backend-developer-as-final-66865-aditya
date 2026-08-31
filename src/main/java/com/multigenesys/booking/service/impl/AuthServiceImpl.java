@@ -11,7 +11,6 @@ import com.multigenesys.booking.repository.UserRepository;
 import com.multigenesys.booking.security.JwtService;
 import com.multigenesys.booking.security.UserPrincipal;
 import com.multigenesys.booking.service.AuthService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,16 +23,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final long jwtExpirationMs;
 
-    @Value("${application.jwt.expiration-ms}")
-    private long jwtExpirationMs;
+    public AuthServiceImpl(
+            AuthenticationManager authenticationManager,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            @Value("${application.jwt.expiration-ms:86400000}") long jwtExpirationMs) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.jwtExpirationMs = jwtExpirationMs;
+    }
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
@@ -73,15 +82,15 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new ConflictException("Email is already in use: " + registerRequest.getEmail());
+            throw new ConflictException("Email is already registered: " + registerRequest.getEmail());
         }
 
         User user = User.builder()
-                .username(registerRequest.getUsername().trim())
-                .email(registerRequest.getEmail().trim().toLowerCase())
+                .username(registerRequest.getUsername())
+                .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .fullName(registerRequest.getFullName().trim())
-                .role(Role.ROLE_USER)
+                .fullName(registerRequest.getFullName())
+                .role(Role.ROLE_USER) // Default role for public registration
                 .build();
 
         User savedUser = userRepository.save(user);

@@ -3,11 +3,9 @@ package com.multigenesys.booking.controller;
 import com.multigenesys.booking.dto.request.ResourceRequest;
 import com.multigenesys.booking.dto.response.ResourceResponse;
 import com.multigenesys.booking.entity.ResourceType;
-import com.multigenesys.booking.exception.BadRequestException;
 import com.multigenesys.booking.service.ResourceService;
 import com.multigenesys.booking.util.PaginationUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,18 +25,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
-
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
 @Tag(name = "Resources", description = "Resource management endpoints (Admin full CRUD, User read-only)")
 @SecurityRequirement(name = "BearerAuth")
 public class ResourceController {
-
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "id", "name", "type", "pricePerHour", "isAvailable", "createdAt", "updatedAt"
-    );
 
     private final ResourceService resourceService;
 
@@ -87,7 +79,7 @@ public class ResourceController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         
-        Pageable pageable = PaginationUtils.createPageable(page, size, sortBy, sortDirection, ALLOWED_SORT_FIELDS);
+        Pageable pageable = PaginationUtils.createResourcePageable(page, size, sortBy, sortDirection);
         Page<ResourceResponse> responses = resourceService.getAllResources(type, availableOnly, pageable);
         return ResponseEntity.ok(responses);
     }

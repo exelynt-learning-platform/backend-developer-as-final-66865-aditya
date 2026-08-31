@@ -9,8 +9,8 @@ import com.multigenesys.booking.entity.User;
 import com.multigenesys.booking.repository.ReservationRepository;
 import com.multigenesys.booking.repository.ResourceRepository;
 import com.multigenesys.booking.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -20,13 +20,29 @@ import java.time.LocalDateTime;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final ResourceRepository resourceRepository;
     private final ReservationRepository reservationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final String adminPassword;
+    private final String userPassword;
+
+    public DataInitializer(
+            UserRepository userRepository,
+            ResourceRepository resourceRepository,
+            ReservationRepository reservationRepository,
+            PasswordEncoder passwordEncoder,
+            @Value("${application.seed.admin-password:Admin@123}") String adminPassword,
+            @Value("${application.seed.user-password:User@123}") String userPassword) {
+        this.userRepository = userRepository;
+        this.resourceRepository = resourceRepository;
+        this.reservationRepository = reservationRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.adminPassword = adminPassword;
+        this.userPassword = userPassword;
+    }
 
     @Override
     public void run(String... args) {
@@ -35,9 +51,9 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedUsers() {
-        createAndSaveUser("admin", "admin@example.com", "Admin@123", "System Administrator", Role.ROLE_ADMIN);
-        createAndSaveUser("user1", "user1@example.com", "User@123", "John Doe", Role.ROLE_USER);
-        createAndSaveUser("user2", "user2@example.com", "User@123", "Jane Smith", Role.ROLE_USER);
+        createAndSaveUser("admin", "admin@example.com", adminPassword, "System Administrator", Role.ROLE_ADMIN);
+        createAndSaveUser("user1", "user1@example.com", userPassword, "John Doe", Role.ROLE_USER);
+        createAndSaveUser("user2", "user2@example.com", userPassword, "Jane Smith", Role.ROLE_USER);
     }
 
     private void createAndSaveUser(String username, String email, String password, String fullName, Role role) {

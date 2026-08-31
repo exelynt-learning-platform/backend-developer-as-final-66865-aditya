@@ -9,8 +9,24 @@ import java.util.Set;
 
 public final class PaginationUtils {
 
+    public static final Set<String> RESOURCE_SORT_FIELDS = Set.of(
+            "id", "name", "type", "pricePerHour", "isAvailable", "createdAt", "updatedAt"
+    );
+
+    public static final Set<String> RESERVATION_SORT_FIELDS = Set.of(
+            "id", "startTime", "endTime", "totalPrice", "status", "createdAt", "updatedAt"
+    );
+
     private PaginationUtils() {
         // Utility class
+    }
+
+    public static Pageable createResourcePageable(int page, int size, String sortBy, String sortDirection) {
+        return createPageable(page, size, sortBy, sortDirection, RESOURCE_SORT_FIELDS);
+    }
+
+    public static Pageable createReservationPageable(int page, int size, String sortBy, String sortDirection) {
+        return createPageable(page, size, sortBy, sortDirection, RESERVATION_SORT_FIELDS);
     }
 
     public static Pageable createPageable(

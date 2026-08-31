@@ -43,7 +43,6 @@ class AuthServiceTest {
     @Mock
     private JwtService jwtService;
 
-    @InjectMocks
     private AuthServiceImpl authService;
 
     private User sampleUser;
@@ -51,7 +50,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(authService, "jwtExpirationMs", 3600000L);
+        authService = new AuthServiceImpl(authenticationManager, userRepository, passwordEncoder, jwtService, 3600000L);
 
         sampleUser = User.builder()
                 .id(1L)
