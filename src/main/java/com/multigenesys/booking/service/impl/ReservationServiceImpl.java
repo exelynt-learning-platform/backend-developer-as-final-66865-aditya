@@ -173,6 +173,10 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setStatus(ReservationStatus.CANCELLED);
     }
 
+    /**
+     * Cancels a reservation by performing a logical soft delete (setting status to CANCELLED).
+     * This preserves historical booking records and maintains audit integrity.
+     */
     @Override
     @Transactional
     public void deleteReservation(Long id, UserPrincipal currentUser) {

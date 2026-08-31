@@ -106,8 +106,8 @@ public class ReservationController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(
-            summary = "Cancel or delete a reservation",
-            description = "Allows users to cancel their own reservation, or admins to delete/cancel any reservation."
+            summary = "Cancel a reservation (Logical Soft Delete)",
+            description = "Performs a logical soft cancellation of the reservation by transitioning its status to CANCELLED for both users and administrators, preserving audit history."
     )
     public ResponseEntity<Void> deleteReservation(
             @PathVariable Long id,

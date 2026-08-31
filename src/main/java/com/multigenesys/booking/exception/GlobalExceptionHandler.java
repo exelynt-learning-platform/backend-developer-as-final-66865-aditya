@@ -134,14 +134,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
-            AccessDeniedException ex, HttpServletRequest request) {
-        log.warn("Access denied: {}", ex.getMessage());
-        return buildErrorResponse(
-                HttpStatus.FORBIDDEN,
-                "Access denied: You do not have sufficient permissions for this operation",
-                request
-        );
+    public void handleAccessDeniedException(AccessDeniedException ex) {
+        throw ex;
     }
 
     @ExceptionHandler(Exception.class)
